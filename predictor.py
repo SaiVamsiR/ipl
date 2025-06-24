@@ -111,12 +111,19 @@ if st.button('Predict Win Probability! ✨'):
 
         # Display results with emojis and bold text.
         st.subheader("Prediction Results:")
-
-        st.write(f"**🏏 {batting_team} Win Probability:** {round(win * 100)}%")
-        st.progress(int(win * 100))
-
-        st.write(f"**🎳 {bowling_team} Win Probability:** {round(loss * 100)}%")
-        st.progress(int(loss * 100))
+        
+        if win > loss:
+            st.markdown(f"<h4 style='color:green;'>🏏 {batting_team} Win Probability: {round(win * 100)}%</h4>", unsafe_allow_html=True)
+            st.progress(int(win * 100))
+        
+            st.markdown(f"<h4 style='color:red;'>🎳 {bowling_team} Win Probability: {round(loss * 100)}%</h4>", unsafe_allow_html=True)
+            st.progress(int(loss * 100))
+        else:
+            st.markdown(f"<h4 style='color:green;'>🎳 {bowling_team} Win Probability: {round(loss * 100)}%</h4>", unsafe_allow_html=True)
+            st.progress(int(loss * 100))
+        
+            st.markdown(f"<h4 style='color:red;'>🏏 {batting_team} Win Probability: {round(win * 100)}%</h4>", unsafe_allow_html=True)
+            st.progress(int(win * 100))
 
         st.success("May the best team win! 🥳🎉")
 
