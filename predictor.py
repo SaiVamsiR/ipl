@@ -28,7 +28,7 @@ with col1:
 with col_center:
     st.markdown("<h3 style='text-align:center;'>🆚</h3>", unsafe_allow_html=True)
 with col2:
-    bowling_team = st.selectbox('🎳 Bowling Team', teams)
+    bowling_team = st.selectbox('🏐 Bowling Team', teams)
 
 if batting_team == bowling_team:
     st.warning("Batting and Bowling teams cannot be the same!")
