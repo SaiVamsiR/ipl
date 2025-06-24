@@ -64,7 +64,7 @@ with col3:
 with col4:
     overs = st.number_input('**Overs Completed** ⏱️', min_value=0.0, max_value=20.0, step=0.1)
 with col5:
-    wickets = st.number_input('**Wickets Fallen** سقوط', min_value=0, max_value=10, step=1)
+    wickets = st.number_input('**Wickets Fallen** 📉', min_value=0, max_value=10, step=1)
 
 st.write("---")
 
