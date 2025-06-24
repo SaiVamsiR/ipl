@@ -80,6 +80,8 @@ if st.button("Predict Win Probability ✨"):
         st.error("Teams must be different.")
     elif total_balls_bowled > max_overs * 6:
         st.error("Overs exceed maximum match limit.")
+    elif completed_overs == 0 and balls_in_current_over == 0 and score == 0 and wickets == 0:
+        st.error("Please fill in the Current Match Situation fields before predicting!")
     elif score > target:
         st.success(f"🎉 {batting_team} has already won the match!")
         render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
