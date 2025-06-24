@@ -122,4 +122,4 @@ if st.button("Predict Win Probability ✨"):
         st.success("May the best team win! 🏆")
 
 st.write("---")
-st.info("💡 This model was trained on historical IPL data. Predictions are for fun and educational purposes only.")
+st.info("💡 This predictor uses a machine learning model trained on historical IPL data. Results are probabilistic and not guaranteed.")
