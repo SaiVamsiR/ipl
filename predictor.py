@@ -1,7 +1,6 @@
 import streamlit as st
 import pickle
 import pandas as pd
-import plotly.express as px
 
 # Load model
 pipe = pickle.load(open('all_models.pkl', 'rb'))
@@ -84,9 +83,7 @@ if st.button('🔮 Predict'):
             "Win Probability (%)": [win * 100, loss * 100]
         })
 
-        fig = px.bar(prob_df, x="Team", y="Win Probability (%)",
-                     color="Team", text_auto=".2f", height=400)
-        st.plotly_chart(fig)
+        
 
 
         # Show summary
