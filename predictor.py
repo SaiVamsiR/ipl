@@ -2,164 +2,148 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from sklearn.preprocessing import StandardScaler
 
-# --- Load the pre-trained model and data (assuming these files exist) ---
-# It's crucial to have 'pipe.pkl', 'Matches_Result.csv', and 'Ball_by_Ball.csv'
-# in the same directory as your Streamlit app or adjust paths accordingly.
+# --- Load the pre-trained model ---
 try:
     pipe = pickle.load(open('pipe.pkl', 'rb'))
 except FileNotFoundError:
     st.error("Error: 'pipe.pkl' not found. Please ensure the trained model file is in the correct directory.")
     st.stop()
 
-try:
-    match = pd.read_csv('Matches_Result.csv')
-    ball = pd.read_csv('Ball_by_Ball.csv')
-except FileNotFoundError:
-    st.error("Error: 'Matches_Result.csv' or 'Ball_by_Ball.csv' not found. Please ensure data files are in the correct directory.")
-    st.stop()
-
-# --- Data Preprocessing (as done in the IPL notebook) ---
-total_score = ball.groupby(['ID', 'innings']).sum()['total_run'].reset_index()
-total_score = total_score[total_score['innings'] == 1]
-match_df = match.merge(total_score[['ID', 'total_run']], left_on='ID', right_on='ID')
-d_df = match_df.merge(ball, on='ID')
-d_df = d_df[d_df['innings'] == 2]
-
-# Clean up team names as done in the notebook
-teams = [
+# --- Hardcoded lists for teams and cities (as CSVs are not loaded) ---
+# These lists must accurately reflect the categories the model was trained on
+teams = sorted([
     'Rajasthan Royals', 'Royal Challengers Bangalore', 'Sunrisers Hyderabad',
     'Delhi Capitals', 'Chennai Super Kings', 'Gujarat Titans',
     'Lucknow Super Giants', 'Kolkata Knight Riders', 'Punjab Kings',
-    'Mumbai Indians'
-] # Note: 'Kings XI Punjab' is likely replaced by 'Punjab Kings' later.
-# 'Rising Pune Supergiant', 'Gujarat Lions', 'Rising Pune Supergiants', 'Pune Warriors', 'Deccan Chargers', 'Kochi Tuskers Kerala' are also handled.
+    'Mumbai Indians', 'Rising Pune Supergiants'
+])
 
-# Replace old team names with current ones for consistency
-d_df['Team1'] = d_df['Team1'].str.replace('Delhi Daredevils', 'Delhi Capitals')
-d_df['Team2'] = d_df['Team2'].str.replace('Delhi Daredevils', 'Delhi Capitals')
-d_df['WinningTeam'] = d_df['WinningTeam'].str.replace('Delhi Daredevils', 'Delhi Capitals')
-d_df['BattingTeam'] = d_df['BattingTeam'].str.replace('Delhi Daredevils', 'Delhi Capitals')
+cities = sorted([
+    'Ahmedabad', 'Kolkata', 'Mumbai', 'Navi Mumbai', 'Pune', 'Dubai',
+    'Sharjah', 'Abu Dhabi', 'Delhi', 'Chennai', 'Hyderabad',
+    'Visakhapatnam', 'Chandigarh', 'Bengaluru', 'Jaipur', 'Indore',
+    'Bangalore', 'Kanpur', 'Rajkot', 'Raipur', 'Ranchi', 'Cuttack',
+    'Dharamsala', 'Nagpur', 'Johannesburg', 'Centurion', 'Durban',
+    'Bloemfontein', 'Port Elizabeth', 'Kimberley', 'East London',
+    'Cape Town'
+])
 
-d_df['Team1'] = d_df['Team1'].str.replace('Deccan Chargers', 'Sunrisers Hyderabad')
-d_df['Team2'] = d_df['Team2'].str.replace('Team2', 'Sunrisers Hyderabad') # This line seems like a typo in original; fixed assuming it refers to Team2
-d_df['WinningTeam'] = d_df['WinningTeam'].str.replace('Deccan Chargers', 'Sunrisers Hyderabad')
-d_df['BattingTeam'] = d_df['BattingTeam'].str.replace('Deccan Chargers', 'Sunrisers Hyderabad')
+# --- Hardcoded list of all dummy columns (CRITICAL for model prediction) ---
+# This list must exactly match the columns and their order that the 'pipe' model
+# expects after one-hot encoding. Derived by taking all possible dummy columns
+# from BattingTeam, BowlingTeam, and City with drop_first=True, plus numerical features.
 
+# Base numerical features
+all_dummy_columns = [
+    'runs_left',
+    'balls_left',
+    'wickets',
+    'total_run_x',
+    'crr',
+    'rrr'
+]
 
-d_df['Team1'] = d_df['Team1'].str.replace('Gujarat Lions', 'Gujarat Titans')
-d_df['Team2'] = d_df['Team2'].str.replace('Gujarat Lions', 'Gujarat Titans')
-d_df['WinningTeam'] = d_df['WinningTeam'].str.replace('Gujarat Lions', 'Gujarat Titans')
-d_df['BattingTeam'] = d_df['BattingTeam'].str.replace('Gujarat Lions', 'Gujarat Titans')
+# Add dummy columns for BattingTeam (sorted teams, drop_first=True)
+sorted_teams = sorted(teams)
+for team in sorted_teams:
+    if team != sorted_teams[0]: # Skip the first team as drop_first=True
+        all_dummy_columns.append(f'BattingTeam_{team}')
 
-d_df['Team1'] = d_df['Team1'].str.replace('Kings XI Punjab', 'Punjab Kings')
-d_df['Team2'] = d_df['Team2'].str.replace('Kings XI Punjab', 'Punjab Kings')
-d_df['WinningTeam'] = d_df['WinningTeam'].str.replace('Kings XI Punjab', 'Punjab Kings')
-d_df['BattingTeam'] = d_df['BattingTeam'].str.replace('Kings XI Punjab', 'Punjab Kings')
+# Add dummy columns for BowlingTeam (sorted teams, drop_first=True)
+for team in sorted_teams:
+    if team != sorted_teams[0]: # Skip the first team as drop_first=True
+        all_dummy_columns.append(f'BowlingTeam_{team}')
 
-d_df['Team1'] = d_df['Team1'].str.replace('Pune Warriors', 'Rising Pune Supergiants')
-d_df['Team2'] = d_df['Team2'].str.replace('Pune Warriors', 'Rising Pune Supergiants')
-d_df['WinningTeam'] = d_df['WinningTeam'].str.replace('Pune Warriors', 'Rising Pune Supergiants')
-d_df['BattingTeam'] = d_df['BattingTeam'].str.replace('Pune Warriors', 'Rising Pune Supergiants')
-
-d_df = d_df[d_df['BattingTeam'].isin(teams)]
-d_df = d_df[d_df['BowlingTeam'].isin(teams)]
-
-# Calculate current score, runs left, balls left, wickets, crr, rrr
-d_df['current_score'] = d_df.groupby('ID')['total_run_y'].cumsum()
-d_df['runs_left'] = d_df['total_run_x'] - d_df['current_score']
-d_df['balls_left'] = 120 - ((d_df['overs'] * 6) + d_df['ballnumber'])
-d_df['player_out'] = d_df['player_out'].fillna("0")
-d_df['player_out'] = d_df['player_out'].apply(lambda x: x if x == "0" else "1")
-d_df['isWicketDelivery'] = pd.to_numeric(d_df['isWicketDelivery'], errors='coerce')
-wickets = d_df.groupby('ID')['isWicketDelivery'].cumsum()
-d_df['wickets'] = wickets.values
-d_df['crr'] = (d_df['current_score'] * 6) / (120 - d_df['balls_left'])
-d_df['rrr'] = (d_df['runs_left'] * 6) / d_df['balls_left']
-
-# Handle infinite RRR values (can occur when balls_left is 0)
-d_df['rrr'] = d_df['rrr'].replace([np.inf, -np.inf], 0)
-
-# Drop rows where balls_left is 0 for RRR calculation (or where target is already met)
-d_df = d_df[d_df['balls_left'] != 0]
-
-# Prepare feature columns for the model
-delivery_df = d_df[['BattingTeam', 'BowlingTeam', 'City', 'runs_left', 'balls_left', 'wickets', 'total_run_x', 'crr', 'rrr']]
+# Add dummy columns for City (sorted cities, drop_first=True)
+sorted_cities = sorted(cities)
+for city in sorted_cities:
+    if city != sorted_cities[0]: # Skip the first city as drop_first=True
+        all_dummy_columns.append(f'City_{city}')
 
 
 # --- Streamlit App Interface ---
 st.set_page_config(page_title="IPL Win Predictor")
-st.title('IPL Win Predictor')
+st.title('IPL Win Predictor !!')
 
 col1, col2 = st.columns(2)
-
 with col1:
-    batting_team = st.selectbox('Select the Batting Team', sorted(teams))
-with col2:
-    bowling_team = st.selectbox('Select the Bowling Team', sorted(teams))
+    batting_team = st.selectbox('Select the Batting Team', teams)
 
-cities = sorted(d_df['City'].unique())
+with col2:
+    bowling_team = st.selectbox('Select the Bowling Team', teams)
+
 selected_city = st.selectbox('Select Host City', cities)
 
-target = st.number_input('Target Score', min_value=1)
+target = st.number_input('Target Score', min_value=1, value=150)
 
 col3, col4, col5 = st.columns(3)
 
 with col3:
-    score = st.number_input('Current Score', min_value=0)
+    score = st.number_input('Current Score', min_value=0, value=0)
 with col4:
-    overs = st.number_input('Overs Completed', min_value=0.0, max_value=19.5, step=0.1)
+    overs = st.number_input('Overs Completed', min_value=0.0, max_value=19.5, step=0.1, value=0.0)
 with col5:
-    wickets = st.number_input('Wickets Fallen', min_value=0, max_value=10)
+    wickets_fallen = st.number_input('Wickets Fallen', min_value=0, max_value=10, value=0)
+
 
 if st.button('Predict Win Probability'):
-    runs_left = target - score
-    balls_left = 120 - (overs * 6)
-    
-    # Ensure balls_left is not zero to avoid division by zero
-    if balls_left == 0:
-        st.warning("All balls have been bowled. Prediction not possible.")
+    # Ensure batting and bowling teams are different
+    if batting_team == bowling_team:
+        st.error("Batting and Bowling teams cannot be the same. Please select different teams.")
     else:
-        wickets_remaining = 10 - wickets
-        
-        crr = (score * 6) / (overs * 6 + (overs * 6) % 1) if (overs * 6 + (overs * 6) % 1) > 0 else 0
-        
-        rrr = (runs_left * 6) / balls_left
+        runs_left = target - score
+        balls_left = 120 - int(overs * 6)
 
+        # Calculate wickets remaining (model expects wickets fallen as `wickets`)
+        wickets_for_model = wickets_fallen
+
+        # Current Run Rate (CRR) calculation: (current_score * 6) / balls_played
+        balls_played = int(overs * 6)
+        if balls_played == 0:
+            crr = 0.0 # Avoid division by zero at the start of the innings
+        else:
+            crr = (score * 6) / balls_played
+
+        # Required Run Rate (RRR) calculation
+        if balls_left == 0:
+            rrr = 0.0 # Avoid division by zero if all balls are bowled or target already met
+        else:
+            rrr = (runs_left * 6) / balls_left
+            if rrr < 0 : # Handle cases where runs_left is negative (target exceeded)
+                rrr = 0.0
+
+        # Create input DataFrame for prediction
         input_df = pd.DataFrame({
             'BattingTeam': [batting_team],
             'BowlingTeam': [bowling_team],
             'City': [selected_city],
             'runs_left': [runs_left],
             'balls_left': [balls_left],
-            'wickets': [wickets_remaining],
-            'total_run_x': [target], # This corresponds to the target score
+            'wickets': [wickets_for_model],
+            'total_run_x': [target],
             'crr': [crr],
             'rrr': [rrr]
         })
 
-        # One-hot encode the categorical features
+        # One-hot encode the categorical features, drop_first=True for consistency with training
         input_df_encoded = pd.get_dummies(input_df, columns=['BattingTeam', 'BowlingTeam', 'City'], drop_first=True)
 
-        # Align columns with the training data (delivery_df used for column reference)
-        # This is crucial because get_dummies might create different columns based on input values
-        # Create a reference dataframe with all possible dummy columns from the training data
-        all_columns = pd.get_dummies(delivery_df, columns=['BattingTeam', 'BowlingTeam', 'City'], drop_first=True).columns
-        
-        # Add missing columns to input_df_encoded and fill with 0
-        missing_cols = set(all_columns) - set(input_df_encoded.columns)
+        # Align columns with the pre-defined 'all_dummy_columns'
+        # Add missing columns and fill with 0
+        missing_cols = set(all_dummy_columns) - set(input_df_encoded.columns)
         for c in missing_cols:
             input_df_encoded[c] = 0
 
-        # Ensure the order of columns is the same as the training data
-        input_df_encoded = input_df_encoded[all_columns]
-        
+        # Ensure the order of columns is exactly the same as during training
+        input_df_encoded = input_df_encoded[all_dummy_columns]
+
         # Make prediction
         result = pipe.predict_proba(input_df_encoded)
-        
-        loss = round(result[0][0] * 100)
-        win = round(result[0][1] * 100)
 
-        st.header(f"{batting_team} - {win}%")
-        st.header(f"{bowling_team} - {loss}%")
+        # Extract probabilities
+        loss_prob = round(result[0][0] * 100)
+        win_prob = round(result[0][1] * 100)
+
+        st.header(f"{batting_team} - {win_prob}%")
+        st.header(f"{bowling_team} - {loss_prob}%")
