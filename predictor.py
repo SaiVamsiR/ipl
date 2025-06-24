@@ -1,7 +1,7 @@
 import streamlit as st
 import pickle
 import pandas as pd
-pipe=pickle.load(open('all_models.pkl','rb'))    
+pipe=pickle.load(open('pipe.pkl','rb'))    
 
 st.title('IPL Win Predictor !!')
 
