@@ -2,13 +2,11 @@ import streamlit as st
 import pickle
 import pandas as pd
 
-# Load trained model
+# Load model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
-# App title
-st.title('🏏 IPL Win Predictor! 🏆')
+st.title('🏏 IPL Winner Predictor! 🏆')
 
-# Teams and venues
 teams = sorted([
     'Chennai Super Kings', 'Delhi Capitals', 'Gujarat Titans', 'Kolkata Knight Riders',
     'Lucknow Super Giants', 'Mumbai Indians', 'Punjab Kings', 'Rajasthan Royals',
@@ -23,14 +21,13 @@ cities = sorted([
     'Ranchi', 'Sharjah', 'Visakhapatnam'
 ])
 
-# Custom colored progress bar renderer
 def render_colored_progress(label, percent, color):
     st.markdown(
         f"""
-        <div style="margin-bottom: 8px;">
-            <strong>{label}: <span style='font-weight: 700;'>{percent}%</span></strong>
-            <div style="background-color: #e0e0e0; border-radius: 10px; overflow: hidden; height: 20px;">
-                <div style="width: {percent}%; background-color: {color}; height: 100%;"></div>
+        <div style="margin-bottom: 10px;">
+            <span style="font-size: 1.4em; font-weight: bold;">{label}: {percent}%</span>
+            <div style="background-color: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
+                <div style="height: 100%; width: {percent}%; background-color: {color};"></div>
             </div>
         </div>
         """,
@@ -46,7 +43,7 @@ with col1:
 with col_middle:
     st.markdown("<h3 style='text-align:center;'>🆚</h3>", unsafe_allow_html=True)
 with col2:
-    bowling_team = st.selectbox("🎳 Bowling Team", teams)
+    bowling_team = st.selectbox("🔴 Bowling Team", teams)
 
 if batting_team == bowling_team:
     st.warning("Batting and Bowling teams must be different!")
@@ -64,7 +61,7 @@ col3, col4 = st.columns(2)
 with col3:
     completed_overs = st.number_input("⏱️ Overs Completed (full only)", min_value=0, max_value=max_overs, step=1)
 with col4:
-    balls_in_current_over = st.number_input("🔴 Balls in Current Over (0–5)", min_value=0, max_value=5, step=1)
+    balls_in_current_over = st.number_input("⚪ Balls in Current Over (0–5)", min_value=0, max_value=5, step=1)
 
 col5, col6 = st.columns(2)
 with col5:
@@ -72,7 +69,6 @@ with col5:
 with col6:
     wickets = st.number_input("📉 Wickets Fallen", min_value=0, max_value=10, step=1)
 
-# Calculations
 total_balls_bowled = completed_overs * 6 + balls_in_current_over
 balls_left = max(0, max_overs * 6 - total_balls_bowled)
 overs_float = completed_overs + balls_in_current_over / 6
