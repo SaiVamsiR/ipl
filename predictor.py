@@ -48,7 +48,7 @@ with col1:
 with col_center:
     st.markdown("<h3 style='text-align:center;'>🆚</h3>", unsafe_allow_html=True)
 with col2:
-    bowling_team = st.selectbox("🎳 Bowling Team", teams)
+    bowling_team = st.selectbox("🔴 Bowling Team", teams)
 
 if batting_team == bowling_team:
     st.warning("Teams must be different!")
@@ -114,9 +114,9 @@ if st.button("Predict Win Probability ✨"):
 
         if win_percent >= loss_percent:
             render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
-            render_colored_progress(f"🎳 {bowling_team} Win Probability", loss_percent, "red")
+            render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "red")
         else:
-            render_colored_progress(f"🎳 {bowling_team} Win Probability", loss_percent, "green")
+            render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "green")
             render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "red")
 
         st.success("May the best team win! 🏆")
