@@ -109,11 +109,15 @@ if st.button('Predict Win Probability! ✨'):
         loss = result[0][0]
         win = result[0][1]
 
-        # Display results with emojis and bold text
+        # Display results with emojis and bold text.
         st.subheader("Prediction Results:")
-        st.metric(label=f"**{batting_team}** Win Probability 🥳", value=f"{round(win * 100)}%")
-        st.metric(label=f"**{bowling_team}** Win Probability 💪", value=f"{round(loss * 100)}%")
-        
+
+        st.write(f"**🏏 {batting_team} Win Probability:** {round(win * 100)}%")
+        st.progress(int(win * 100))
+
+        st.write(f"**🎳 {bowling_team} Win Probability:** {round(loss * 100)}%")
+        st.progress(int(loss * 100))
+
         st.success("May the best team win! 🥳🎉")
 
 st.write("---")
