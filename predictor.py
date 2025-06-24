@@ -41,7 +41,7 @@ col1, col_middle, col2 = st.columns([5, 1, 5])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
 with col_middle:
-    st.markdown("<h3 style='text-align:center;'>🆚</h3>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; font-size: 26px; padding-top: 26px;'>🆚</div>", unsafe_allow_html=True)
 with col2:
     bowling_team = st.selectbox("🔴 Bowling Team", teams)
 
