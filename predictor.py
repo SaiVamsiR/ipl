@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 # Load model
-pipe = pickle.load(open('pipe.pkl', 'rb'))
+pipe = pickle.load(open('all_models.pkl', 'rb'))
 
 # App title
 st.set_page_config(page_title="IPL Win Predictor", page_icon="🏏")
