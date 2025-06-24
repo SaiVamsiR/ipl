@@ -6,7 +6,7 @@ import pandas as pd
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
 # App Title
-st.title('🏏 IPL Win Predictor! 🏆')
+st.title('🏏 IPL Winner Predictor! 🏆')
 
 # Team and Venue Options
 teams = sorted([
