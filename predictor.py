@@ -10,7 +10,7 @@ except FileNotFoundError:
     st.error("Error: 'pipe.pkl' not found. Please ensure the trained model file is in the correct directory.")
     st.stop()
 
-# --- Hardcoded lists for teams and cities (as CSVs are not loaded) ---
+# --- Hardcoded lists for teams and cities ---
 # These lists must accurately reflect the categories the model was trained on
 teams = sorted([
     'Rajasthan Royals', 'Royal Challengers Bangalore', 'Sunrisers Hyderabad',
@@ -28,39 +28,6 @@ cities = sorted([
     'Bloemfontein', 'Port Elizabeth', 'Kimberley', 'East London',
     'Cape Town'
 ])
-
-# --- Hardcoded list of all dummy columns (CRITICAL for model prediction) ---
-# This list must exactly match the columns and their order that the 'pipe' model
-# expects after one-hot encoding. Derived by taking all possible dummy columns
-# from BattingTeam, BowlingTeam, and City with drop_first=True, plus numerical features.
-
-# Base numerical features
-all_dummy_columns = [
-    'runs_left',
-    'balls_left',
-    'wickets',
-    'total_run_x',
-    'crr',
-    'rrr'
-]
-
-# Add dummy columns for BattingTeam (sorted teams, drop_first=True)
-sorted_teams = sorted(teams)
-for team in sorted_teams:
-    if team != sorted_teams[0]: # Skip the first team as drop_first=True
-        all_dummy_columns.append(f'BattingTeam_{team}')
-
-# Add dummy columns for BowlingTeam (sorted teams, drop_first=True)
-for team in sorted_teams:
-    if team != sorted_teams[0]: # Skip the first team as drop_first=True
-        all_dummy_columns.append(f'BowlingTeam_{team}')
-
-# Add dummy columns for City (sorted cities, drop_first=True)
-sorted_cities = sorted(cities)
-for city in sorted_cities:
-    if city != sorted_cities[0]: # Skip the first city as drop_first=True
-        all_dummy_columns.append(f'City_{city}')
-
 
 # --- Streamlit App Interface ---
 st.set_page_config(page_title="IPL Win Predictor")
@@ -95,7 +62,7 @@ if st.button('Predict Win Probability'):
         runs_left = target - score
         balls_left = 120 - int(overs * 6)
 
-        # Calculate wickets remaining (model expects wickets fallen as `wickets`)
+        # 'wickets' in the input DataFrame should represent wickets fallen, consistent with model training
         wickets_for_model = wickets_fallen
 
         # Current Run Rate (CRR) calculation: (current_score * 6) / balls_played
@@ -113,7 +80,8 @@ if st.button('Predict Win Probability'):
             if rrr < 0 : # Handle cases where runs_left is negative (target exceeded)
                 rrr = 0.0
 
-        # Create input DataFrame for prediction
+        # Create input DataFrame with original categorical columns
+        # The 'pipe' object is expected to handle the one-hot encoding internally
         input_df = pd.DataFrame({
             'BattingTeam': [batting_team],
             'BowlingTeam': [bowling_team],
@@ -121,25 +89,14 @@ if st.button('Predict Win Probability'):
             'runs_left': [runs_left],
             'balls_left': [balls_left],
             'wickets': [wickets_for_model],
-            'total_run_x': [target],
+            'total_run_x': [target], # total_run_x corresponds to the target score from the notebook
             'crr': [crr],
             'rrr': [rrr]
         })
 
-        # One-hot encode the categorical features, drop_first=True for consistency with training
-        input_df_encoded = pd.get_dummies(input_df, columns=['BattingTeam', 'BowlingTeam', 'City'], drop_first=True)
-
-        # Align columns with the pre-defined 'all_dummy_columns'
-        # Add missing columns and fill with 0
-        missing_cols = set(all_dummy_columns) - set(input_df_encoded.columns)
-        for c in missing_cols:
-            input_df_encoded[c] = 0
-
-        # Ensure the order of columns is exactly the same as during training
-        input_df_encoded = input_df_encoded[all_dummy_columns]
-
-        # Make prediction
-        result = pipe.predict_proba(input_df_encoded)
+        # Directly pass input_df to the pipe. The pipe's internal ColumnTransformer
+        # is expected to handle the one-hot encoding of 'BattingTeam', 'BowlingTeam', 'City'.
+        result = pipe.predict_proba(input_df)
 
         # Extract probabilities
         loss_prob = round(result[0][0] * 100)
