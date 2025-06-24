@@ -5,7 +5,7 @@ import pandas as pd
 # Load the pre-trained model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
-st.title('🏏 IPL Win Predictor! 🏆')
+st.title('🏏 IPL Winner Predictor! 🏆')
 
 teams = sorted([
     'Chennai Super Kings', 'Delhi Capitals', 'Gujarat Titans', 'Kolkata Knight Riders',
