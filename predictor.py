@@ -99,7 +99,7 @@ st.write("---")
 
 if st.button("Predict Win Probability ✨"):
     with st.spinner("Crunching the numbers..."):
-        time.sleep(2)  # Deliberate delay to show spinner before displaying results
+        time.sleep(3)  # Deliberate delay to show spinner before displaying results
 
         if batting_team == bowling_team:
             st.error("Teams must be different.")
@@ -138,7 +138,7 @@ if st.button("Predict Win Probability ✨"):
             loss_percent = round(prediction[0] * 100)
 
             st.subheader("Prediction Results 📊")
-            st.balloons()
+            
 
             if win_percent >= loss_percent:
                 render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
