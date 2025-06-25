@@ -59,12 +59,18 @@ col1, col_middle, col2 = st.columns([5, 1, 5])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
     st.image(team_logos[batting_team], width=100)
+    st.markdown(
+    f"<div style='text-align: center;'><img src='{team_logos[batting_team]}' width='100'></div>",
+    unsafe_allow_html=True)
    
 with col_middle:
     st.markdown("<div style='text-align:center; font-size: 26px; padding-top: 26px;'>🆚</div>", unsafe_allow_html=True)
 with col2:
     bowling_team = st.selectbox("🔴 Bowling Team", teams)
     st.image(team_logos[bowling_team], width=100)
+    st.markdown(
+    f"<div style='text-align: center;'><img src='{team_logos[bowling_team]}' width='100'></div>",
+    unsafe_allow_html=True)
    
 
 if batting_team == bowling_team:
@@ -110,7 +116,6 @@ if st.button("Predict Win Probability ✨"):
         st.error("Please fill in the Current Match Situation fields before predicting!")
     elif score > target:
         st.success(f"🎉 {batting_team} has already won the match!")
-        st.image(team_logos[batting_team], width=100)
         render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
         render_colored_progress(f"🔴 {bowling_team} Win Probability", 0, "red")
     else:
