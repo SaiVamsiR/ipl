@@ -55,7 +55,7 @@ def render_colored_progress(label, percent, color):
 st.write("---")
 st.header("Team Selection")
 
-col1, col_middle, col2 = st.columns([1, 2, 1])
+col1, col_middle, col2 = st.columns([5, 2, 5])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
     st.image(team_logos[batting_team], width=100)
