@@ -106,7 +106,7 @@ if st.button("Predict Win Probability ✨"):
             st.error("Please fill in the Current Match Situation fields before predicting!")
         elif score > target:
             st.success(f"🎉 {batting_team} has already won the match!")
-            st.balloons()
+            
             render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
             render_colored_progress(f"🔴 {bowling_team} Win Probability", 0, "red")
         else:
