@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 from PIL import Image
+import time
 
 # Load the ML model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
@@ -98,6 +99,8 @@ st.write("---")
 
 if st.button("Predict Win Probability ✨"):
     with st.spinner("Crunching the numbers..."):
+        time.sleep(2)  # Deliberate delay to show spinner before displaying results
+
         if batting_team == bowling_team:
             st.error("Teams must be different.")
         elif total_balls_bowled > max_overs * 6:
@@ -135,7 +138,7 @@ if st.button("Predict Win Probability ✨"):
             loss_percent = round(prediction[0] * 100)
 
             st.subheader("Prediction Results 📊")
-            
+            st.balloons()
 
             if win_percent >= loss_percent:
                 render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
