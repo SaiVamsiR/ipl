@@ -1,7 +1,7 @@
 import streamlit as st
 import pickle
 import pandas as pd
-from PIL import Image
+from PIL import Image 
 
 # Load model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
@@ -37,6 +37,7 @@ team_logos = {
     'Sunrisers Hyderabad': 'logos/SRH.png'
 }
 
+
 def render_colored_progress(label, percent, color):
     st.markdown(
         f"""
@@ -57,12 +58,12 @@ st.header("Team Selection")
 col1, col_middle, col2 = st.columns([5, 1, 5])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
-    st.markdown(f"<div style='text-align: center;'><img src='{team_logos[batting_team]}' width='100'></div>", unsafe_allow_html=True)
+    st.image(team_logos[batting_team], width=100)
 with col_middle:
     st.markdown("<div style='text-align:center; font-size: 26px; padding-top: 26px;'>🆚</div>", unsafe_allow_html=True)
 with col2:
     bowling_team = st.selectbox("🔴 Bowling Team", teams)
-    st.markdown(f"<div style='text-align: center;'><img src='{team_logos[bowling_team]}' width='100'></div>", unsafe_allow_html=True)
+    st.image(team_logos[bowling_team], width=100)
 
 if batting_team == bowling_team:
     st.warning("Batting and Bowling teams must be different!")
@@ -106,8 +107,7 @@ if st.button("Predict Win Probability ✨"):
     elif completed_overs == 0 and balls_in_current_over == 0 and score == 0 and wickets == 0:
         st.error("Please fill in the Current Match Situation fields before predicting!")
     elif score > target:
-        st.success(f"🎉 <b>{batting_team} has already won the match!</b>", icon="✅")
-        st.markdown(f"<div style='text-align: center;'><img src='{team_logos[batting_team]}' width='120'></div>", unsafe_allow_html=True)
+        st.success(f"🎉 {batting_team} has already won the match!")
         render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
         render_colored_progress(f"🔴 {bowling_team} Win Probability", 0, "red")
     else:
