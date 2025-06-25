@@ -7,7 +7,7 @@ import time
 # Load the ML model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
-st.set_page_config(page_title="IPL Predictor", layout="centered")
+st.set_page_config(page_title="IPL Winner Predictor by RSV", layout="centered")
 st.title('🏏 IPL Winner Predictor! 🏆')
 
 teams = sorted([
