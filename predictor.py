@@ -1,12 +1,14 @@
 import streamlit as st
 import pickle
 import pandas as pd
+from PIL import Image
 
 # Load model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
 st.title('🏏 IPL Winner Predictor! 🏆')
 
+# Teams and cities
 teams = sorted([
     'Chennai Super Kings', 'Delhi Capitals', 'Gujarat Titans', 'Kolkata Knight Riders',
     'Lucknow Super Giants', 'Mumbai Indians', 'Punjab Kings', 'Rajasthan Royals',
@@ -21,6 +23,21 @@ cities = sorted([
     'Ranchi', 'Sharjah', 'Visakhapatnam'
 ])
 
+# Logo paths
+team_logos = {
+    'Chennai Super Kings': 'logos/CSK.png',
+    'Delhi Capitals': 'logos/DC.jpg',
+    'Gujarat Titans': 'logos/GT.png',
+    'Kolkata Knight Riders': 'logos/KKR.png',
+    'Lucknow Super Giants': 'logos/LSG.png',
+    'Mumbai Indians': 'logos/MI.png',
+    'Punjab Kings': 'logos/PBKS.png',
+    'Rajasthan Royals': 'logos/RR.png',
+    'Royal Challengers Bangalore': 'logos/RCB.png',
+    'Sunrisers Hyderabad': 'logos/SRH.png'
+}
+
+
 def render_colored_progress(label, percent, color):
     st.markdown(
         f"""
@@ -34,26 +51,31 @@ def render_colored_progress(label, percent, color):
         unsafe_allow_html=True
     )
 
+# --- Team Selection ---
 st.write("---")
 st.header("Team Selection")
 
 col1, col_middle, col2 = st.columns([5, 1, 5])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
+    st.image(team_logos[batting_team], width=100)
 with col_middle:
     st.markdown("<div style='text-align:center; font-size: 26px; padding-top: 26px;'>🆚</div>", unsafe_allow_html=True)
 with col2:
     bowling_team = st.selectbox("🔴 Bowling Team", teams)
+    st.image(team_logos[bowling_team], width=100)
 
 if batting_team == bowling_team:
     st.warning("Batting and Bowling teams must be different!")
 
+# --- Match Details ---
 st.write("---")
 st.header("Match Details 🏟️")
 venue = st.selectbox("🏙️ Match City", cities)
 target = st.number_input("🎯 Target Runs", min_value=1, step=1)
 max_overs = st.number_input("🔢 Maximum Overs in Match", min_value=1, max_value=20, value=20)
 
+# --- Current Match Situation ---
 st.write("---")
 st.header("Current Match Situation")
 
@@ -69,10 +91,12 @@ with col5:
 with col6:
     wickets = st.number_input("📉 Wickets Fallen", min_value=0, max_value=10, step=1)
 
+# --- Computation ---
 total_balls_bowled = completed_overs * 6 + balls_in_current_over
 balls_left = max(0, max_overs * 6 - total_balls_bowled)
 overs_float = completed_overs + balls_in_current_over / 6
 
+# --- Prediction Button ---
 st.write("---")
 
 if st.button("Predict Win Probability ✨"):
