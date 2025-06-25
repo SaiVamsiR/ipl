@@ -92,6 +92,9 @@ if st.button("Predict Win Probability ✨"):
         crr = score / overs_float if overs_float > 0 else 0
         rrr = (runs_left * 6 / balls_left) if balls_left > 0 else runs_left * 6
 
+        st.markdown(f"**Current Run Rate (CRR):** {crr:.2f} runs/over")
+        st.markdown(f"**Required Run Rate (RRR):** {rrr:.2f} runs/over")
+
         input_df = pd.DataFrame({
             'BattingTeam': [batting_team],
             'BowlingTeam': [bowling_team],
