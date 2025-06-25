@@ -1,27 +1,14 @@
 import streamlit as st
 import pickle
 import pandas as pd
-from PIL import Image
-from streamlit_lottie import st_lottie
-import requests
+from PIL import Image 
 
-# Function to load Lottie animations
-def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
-
-# Load the ML model
+# Load model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
-st.set_page_config(page_title="IPL Predictor", layout="centered")
 st.title('🏏 IPL Winner Predictor! 🏆')
 
-# Load and display a cricket-themed animation
-lottie_cricket = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_kkflmtur.json")
-st_lottie(lottie_cricket, height=200, key="cricket_anim")
-
+# Teams and cities
 teams = sorted([
     'Chennai Super Kings', 'Delhi Capitals', 'Gujarat Titans', 'Kolkata Knight Riders',
     'Lucknow Super Giants', 'Mumbai Indians', 'Punjab Kings', 'Rajasthan Royals',
@@ -36,6 +23,7 @@ cities = sorted([
     'Ranchi', 'Sharjah', 'Visakhapatnam'
 ])
 
+# Logo paths
 team_logos = {
     'Chennai Super Kings': 'logos/CSK.png',
     'Delhi Capitals': 'logos/DC.jpg',
@@ -48,6 +36,7 @@ team_logos = {
     'Royal Challengers Bangalore': 'logos/RCB.png',
     'Sunrisers Hyderabad': 'logos/SRH.png'
 }
+
 
 def render_colored_progress(label, percent, color):
     st.markdown(
@@ -102,6 +91,7 @@ with col5:
 with col6:
     wickets = st.number_input("📉 Wickets Fallen", min_value=0, max_value=10, step=1)
 
+# --- Computation ---
 total_balls_bowled = completed_overs * 6 + balls_in_current_over
 balls_left = max(0, max_overs * 6 - total_balls_bowled)
 overs_float = completed_overs + balls_in_current_over / 6
@@ -110,59 +100,51 @@ overs_float = completed_overs + balls_in_current_over / 6
 st.write("---")
 
 if st.button("Predict Win Probability ✨"):
-    with st.spinner("Crunching the numbers..."):
-        if batting_team == bowling_team:
-            st.error("Teams must be different.")
-        elif total_balls_bowled > max_overs * 6:
-            st.error("Overs exceed maximum match limit.")
-        elif completed_overs == 0 and balls_in_current_over == 0 and score == 0 and wickets == 0:
-            st.error("Please fill in the Current Match Situation fields before predicting!")
-        elif score > target:
-            st.success(f"🎉 {batting_team} has already won the match!")
+    if batting_team == bowling_team:
+        st.error("Teams must be different.")
+    elif total_balls_bowled > max_overs * 6:
+        st.error("Overs exceed maximum match limit.")
+    elif completed_overs == 0 and balls_in_current_over == 0 and score == 0 and wickets == 0:
+        st.error("Please fill in the Current Match Situation fields before predicting!")
+    elif score > target:
+        st.success(f"🎉 {batting_team} has already won the match!")
+        render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
+        render_colored_progress(f"🔴 {bowling_team} Win Probability", 0, "red")
+    else:
+        runs_left = target - score
+        wickets_remaining = 10 - wickets
+        crr = score / overs_float if overs_float > 0 else 0
+        rrr = (runs_left * 6 / balls_left) if balls_left > 0 else runs_left * 6
 
-            lottie_fireworks = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_jz7gkhjb.json")
-            st_lottie(lottie_fireworks, height=200, key="celebration")
+        st.markdown(f"**Current Run Rate (CRR):** {crr:.2f} runs/over")
+        st.markdown(f"**Required Run Rate (RRR):** {rrr:.2f} runs/over")
 
-            render_colored_progress(f"🏏 {batting_team} Win Probability", 100, "green")
-            render_colored_progress(f"🔴 {bowling_team} Win Probability", 0, "red")
+        input_df = pd.DataFrame({
+            'BattingTeam': [batting_team],
+            'BowlingTeam': [bowling_team],
+            'City': [venue],
+            'runs_left': [runs_left],
+            'balls_left': [balls_left],
+            'wickets': [wickets_remaining],
+            'total_run_x': [target],
+            'crr': [crr],
+            'rrr': [rrr]
+        })
+
+        prediction = pipe.predict_proba(input_df)[0]
+        win_percent = round(prediction[1] * 100)
+        loss_percent = round(prediction[0] * 100)
+
+        st.subheader("Prediction Results 📊")
+
+        if win_percent >= loss_percent:
+            render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
+            render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "red")
         else:
-            runs_left = target - score
-            wickets_remaining = 10 - wickets
-            crr = score / overs_float if overs_float > 0 else 0
-            rrr = (runs_left * 6 / balls_left) if balls_left > 0 else runs_left * 6
+            render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "green")
+            render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "red")
 
-            st.markdown(f"**Current Run Rate (CRR):** {crr:.2f} runs/over")
-            st.markdown(f"**Required Run Rate (RRR):** {rrr:.2f} runs/over")
-
-            input_df = pd.DataFrame({
-                'BattingTeam': [batting_team],
-                'BowlingTeam': [bowling_team],
-                'City': [venue],
-                'runs_left': [runs_left],
-                'balls_left': [balls_left],
-                'wickets': [wickets_remaining],
-                'total_run_x': [target],
-                'crr': [crr],
-                'rrr': [rrr]
-            })
-
-            prediction = pipe.predict_proba(input_df)[0]
-            win_percent = round(prediction[1] * 100)
-            loss_percent = round(prediction[0] * 100)
-
-            st.subheader("Prediction Results 📊")
-
-            lottie_analysis = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_szlepvdh.json")
-            st_lottie(lottie_analysis, height=200, key="analysis")
-
-            if win_percent >= loss_percent:
-                render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
-                render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "red")
-            else:
-                render_colored_progress(f"🔴 {bowling_team} Win Probability", loss_percent, "green")
-                render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "red")
-
-            st.success("May the best team win! 🏆")
+        st.success("May the best team win! 🏆")
 
 st.write("---")
 st.info("💡 This predictor uses a machine learning model trained on historical IPL data. Results are probabilistic and not guaranteed.")
