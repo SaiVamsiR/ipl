@@ -55,22 +55,18 @@ def render_colored_progress(label, percent, color):
 st.write("---")
 st.header("Team Selection")
 
-col1, col_middle, col2 = st.columns([5, 1, 5])
+col1, col_middle, col2 = st.columns([1, 2, 1])
 with col1:
     batting_team = st.selectbox("🏏 Batting Team", teams)
     st.image(team_logos[batting_team], width=100)
-    st.markdown(
-    f"<div style='text-align: center;'><img src='{team_logos[batting_team]}' width='100'></div>",
-    unsafe_allow_html=True)
+    
    
 with col_middle:
     st.markdown("<div style='text-align:center; font-size: 26px; padding-top: 26px;'>🆚</div>", unsafe_allow_html=True)
 with col2:
     bowling_team = st.selectbox("🔴 Bowling Team", teams)
     st.image(team_logos[bowling_team], width=100)
-    st.markdown(
-    f"<div style='text-align: center;'><img src='{team_logos[bowling_team]}' width='100'></div>",
-    unsafe_allow_html=True)
+    
    
 
 if batting_team == bowling_team:
