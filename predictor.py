@@ -1,7 +1,7 @@
 import streamlit as st
 import pickle
 import pandas as pd
-from PIL import Image
+from PIL import Image 
 
 # Load model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
