@@ -136,8 +136,15 @@ if st.button("Predict Win Probability ✨"):
             styled_crr_vs_rrr(crr, rrr)
 
             # 🧮 Runs needed summary
-            if runs_left > 0 and balls_left > 0:
-                st.markdown(f"🧮 <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.", unsafe_allow_html=True)
+                           st.markdown(
+                f"""
+                <div style='font-size: 26px; font-weight: bold; margin-top: 10px;'>
+                    🧮 <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
 
             input_df = pd.DataFrame({
                 'BattingTeam': [batting_team],
