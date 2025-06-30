@@ -99,7 +99,7 @@ st.write("---")
 
 if st.button("Predict Win Probability ✨"):
     with st.spinner("Crunching the numbers..."):
-        time.sleep(3)  # Deliberate delay to show spinner before displaying results
+        time.sleep(3)
 
         if batting_team == bowling_team:
             st.error("Teams must be different.")
@@ -118,8 +118,33 @@ if st.button("Predict Win Probability ✨"):
             crr = score / overs_float if overs_float > 0 else 0
             rrr = (runs_left * 6 / balls_left) if balls_left > 0 else runs_left * 6
 
-            st.markdown(f"**Current Run Rate (CRR):** {crr:.2f} runs/over")
-            st.markdown(f"**Required Run Rate (RRR):** {rrr:.2f} runs/over")
+            # 👉 Styled CRR output
+            def styled_crr_vs_rrr(crr, rrr):
+                if crr < rrr:
+                    color = "red"
+                elif crr > rrr:
+                    color = "green"
+                else:
+                    color = "orange"
+                st.markdown(
+                    f"""<div style='font-size: 20px'>
+                        💹 <b>Current Run Rate (CRR):</b> <span style='color:{color}'>{crr:.2f}</span> runs/over<br>
+                        🎯 <b>Required Run Rate (RRR):</b> {rrr:.2f} runs/over
+                    </div>""",
+                    unsafe_allow_html=True
+                )
+
+            styled_crr_vs_rrr(crr, rrr)
+
+            # 🎯 Suggested runs per ball message
+            if balls_left > 0:
+                suggest_runs_per_ball = runs_left / balls_left
+                if suggest_runs_per_ball <= 1:
+                    st.success(f"🔋 Keep the pressure on! Only ~{suggest_runs_per_ball:.2f} runs needed per ball.")
+                elif suggest_runs_per_ball <= 1.5:
+                    st.warning(f"⚠️ Getting tricky! Need ~{suggest_runs_per_ball:.2f} runs per ball.")
+                else:
+                    st.error(f"🚨 High pressure! ~{suggest_runs_per_ball:.2f} runs per ball needed.")
 
             input_df = pd.DataFrame({
                 'BattingTeam': [batting_team],
@@ -138,7 +163,6 @@ if st.button("Predict Win Probability ✨"):
             loss_percent = round(prediction[0] * 100)
 
             st.subheader("Prediction Results 📊")
-            
 
             if win_percent >= loss_percent:
                 render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "green")
@@ -148,6 +172,3 @@ if st.button("Predict Win Probability ✨"):
                 render_colored_progress(f"🏏 {batting_team} Win Probability", win_percent, "red")
 
             st.success("May the best team win! 🏆")
-
-st.write("---")
-st.info("💡 This predictor uses a machine learning model trained on historical IPL data. Results are probabilistic and not guaranteed.")
