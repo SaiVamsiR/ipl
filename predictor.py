@@ -4,6 +4,7 @@ import pandas as pd
 from PIL import Image
 import time
 
+
 # Load the ML model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 
@@ -135,16 +136,16 @@ if st.button("Predict Win Probability ✨"):
 
             styled_crr_vs_rrr(crr, rrr)
 
-            # 🧮 Runs needed summary
-                           st.markdown(
-                f"""
-                <div style='font-size: 26px; font-weight: bold; margin-top: 10px;'>
-                    🧮 <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
+            # 🧮 Runs needed summary (larger font)
+            if runs_left > 0 and balls_left > 0:
+                st.markdown(
+                    f"""
+                    <div style='font-size: 28px; font-weight: bold; margin-top: 12px;'>
+                        🧮 <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             input_df = pd.DataFrame({
                 'BattingTeam': [batting_team],
