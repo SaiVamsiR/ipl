@@ -141,7 +141,7 @@ if st.button("Predict Win Probability ✨"):
                 st.markdown(
                     f"""
                     <div style='font-size: 28px; font-weight: bold; margin-top: 12px;'>
-                        🧮 <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.
+                          <b>{batting_team}</b> need <b>{runs_left}</b> runs from <b>{balls_left}</b> balls.
                     </div>
                     """,
                     unsafe_allow_html=True
